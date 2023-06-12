@@ -11,12 +11,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
 public class LoginController {
 
@@ -30,19 +27,31 @@ public class LoginController {
     private PasswordField passwordPasswordField;
     @FXML
     private Button registerButton;
+    @FXML
+    private Button loginButton;
 
     private Stage stage;
     private Scene scene;
     private Parent root;
 
+
+    String Username;
+
+    int user_eno = 0;
+    String user_ename = " ";
+    String user_gender = " ";
+    String user_DOB = " ";
+    String user_JoinDate = " ";
+    String user_Department = " ";
+
     public void loginButtonOnAction(ActionEvent event){
 
-        if(!usernameTextField.getText().isBlank() && !passwordPasswordField.getText().isBlank()){
+        if(usernameTextField.getText().isBlank() && passwordPasswordField.getText().isBlank()){
             //loginMessageLabel.setText("You Try to Login !");
-            validateLogin();
+            loginMessageLabel.setText("Please Enter your Username And Password");
         }
         else{
-            loginMessageLabel.setText("Please Enter your Username And Password");
+            validateLogin();
         }
     }
 
@@ -58,7 +67,9 @@ public class LoginController {
             while(queryResult.next()){
                 if(queryResult.getInt(1)==1){
                     loginMessageLabel.setText("Welcome !!!");
-                    createAccountForm();
+                    Username = usernameTextField.getText();
+                    PassEmpDets(Username);
+                    switchtoEmployeeDetails();
                 }
                 else{
                     loginMessageLabel.setText("Invalid Login. Please Try Again !!!");
@@ -84,6 +95,8 @@ public class LoginController {
         }
     }
 
+
+
     public void switchtoRegisterNewUserPage(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("RegisterNewUserPage.fxml"));
         stage = (Stage)((Node)event.getSource()).getScene().getWindow();
@@ -92,37 +105,70 @@ public class LoginController {
         stage.show();
     }
 
-    public void switchtoLoginPage(ActionEvent event) throws IOException {
+    public void PassEmpDets(String Username) throws IOException {
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","system","sql321");
+            Statement statement = con.createStatement();
+            ResultSet rs = statement.executeQuery("select *from UserAccDets where UserName='"+Username+"'");
 
-        Parent root = FXMLLoader.load(getClass().getResource("LoginPage.fxml"));
-        stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
+            while(rs.next()){
+                user_eno = rs.getInt(1);
+            }
+            con.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+
+        System.out.println(user_eno);
+
+        try {
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+            Connection con = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","system","sql321");
+            Statement statement = con.createStatement();
+            ResultSet rs = statement.executeQuery("select *from Emp where eno='"+user_eno+"'");
+
+            while(rs.next()){
+                user_eno = rs.getInt(1);
+                user_ename= rs.getString(2);
+                user_gender= rs.getString(3);
+                user_DOB = rs.getString(4); ;
+                user_JoinDate = rs.getString(5); ;
+                user_Department = rs.getString(6);
+            }
+            con.close();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("EmployeeDetails.fxml"));
+            Parent destinationRoot = loader.load();
+            EmployeeDetailsController destinationController = loader.getController();
+
+            // Pass values to the destination controller
+            destinationController.ReceiveEmpDets(user_eno, user_ename, user_gender, user_DOB, user_JoinDate, user_Department);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void switchtoEmployeeDetails(ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("EmployeeDetails.fxml"));
-        stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
-    }
 
-    public void switchtoSalaryDetails (ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("SalaryDetails.fxml"));
-        stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
-    }
+    public void switchtoEmployeeDetails() throws IOException {
 
-    public void switchtoProjectDetails (ActionEvent event) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("SalaryDetails.fxml"));
-        stage = (Stage)((Node)event.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("EmployeeDetails.fxml"));
+        Parent mainScreenRoot = loader.load();
+
+        // Get the controller instance
+
+        Scene mainScreenScene = new Scene(mainScreenRoot);
+
+        // Get the current stage and set the main screen scene
+        Stage primaryStage = (Stage) loginButton.getScene().getWindow();
+        primaryStage.setScene(mainScreenScene);
     }
 
     public void cancelButtonOnAction(ActionEvent e){

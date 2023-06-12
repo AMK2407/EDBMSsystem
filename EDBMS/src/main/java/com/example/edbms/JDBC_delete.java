@@ -1,7 +1,7 @@
 package com.example.edbms;
 
 import java.io.*;
-import java.util.*;
+
 import java.sql.*;
 
 public class JDBC_delete {
@@ -13,18 +13,39 @@ public class JDBC_delete {
 
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-            System.out.print("\n-----To Delete Employee Record-----\n\n");
+            System.out.print("\n-----To Delete Employee Records in ALl Tables-----\n\n");
 
             while(true){
+                int count;
                 System.out.print("Enter Emp Id: ");
                 int eno=Integer.parseInt(br.readLine());
 
-                int count=smt.executeUpdate("delete from emp where eno="+eno);
+                //Delete Record from Employee Details
+                count=smt.executeUpdate("delete from emp where eno="+eno);
                 if(count>0){
-                    System.out.println(count+" Record Deleted");
+                    System.out.println(count+" Employee Record Deleted");
                 }
                 else
                     System.out.println("Employee ID to be deleted does not EXIST\nTry Again!");
+
+
+                //Delete Record from Salary Details
+                count=smt.executeUpdate("delete from SalaryDets where eno="+eno);
+                if(count>0){
+                    System.out.println(count+" Employee Salary Details Record Deleted");
+                }
+                else
+                    System.out.println("Employee ID to be deleted does not EXIST\nTry Again!");
+
+
+                //Delete Record from Project Details
+                count=smt.executeUpdate("delete from ProjectDets where eno="+eno);
+                if(count>0){
+                    System.out.println(count+" Employee Salary Details Record Deleted");
+                }
+                else
+                    System.out.println("Employee ID to be deleted does not EXIST\nTry Again!");
+
 
                 System.out.print("\nDo you want to delete more records [Yes/No] => ");
                 String ch=br.readLine();
